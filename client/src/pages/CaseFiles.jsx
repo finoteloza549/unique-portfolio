@@ -51,7 +51,7 @@ const CaseFiles = () => {
     statusColor: 'text-police-cyan border-police-cyan/40 bg-cyan-950/20',
     role: 'Full-Stack Developer',
     github: 'YOUR_GITHUB_LINK',
-    demo: 'YOUR_DEMO_LINK'
+    demo: 'https://unique-portfolio-n593.vercel.app/'
   }
 ];
   return (
