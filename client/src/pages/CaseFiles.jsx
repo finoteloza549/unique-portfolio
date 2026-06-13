@@ -50,7 +50,7 @@ const CaseFiles = () => {
     status: 'ACTIVE',
     statusColor: 'text-police-cyan border-police-cyan/40 bg-cyan-950/20',
     role: 'Full-Stack Developer',
-    github: 'YOUR_GITHUB_LINK',
+    github: 'https://github.com/finoteloza549/unique-portfolio',
     demo: 'https://unique-portfolio-n593.vercel.app/'
   }
 ];
