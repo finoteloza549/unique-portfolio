@@ -4,7 +4,7 @@ import { useSocket } from '../context/SocketContext';
 import { Shield, Eye, Lock, RefreshCw, Trash, UserCheck, AlertTriangle, Activity, Users, FileText, CheckCircle2, Clock } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'police-database-production.up.railway.app';
 
 const Headquarters = () => {
   const { socket, isConnected } = useSocket();

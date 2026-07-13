@@ -61,7 +61,7 @@ const Landing = () => {
         <div className="flex justify-between items-center pb-3 border-b border-[#1e2430] mb-4">
           <div className="flex items-center space-x-2">
             <TermIcon size={16} className="text-police-cyan animate-pulse" />
-            <span className="font-bold tracking-widest uppercase">SECURE TERMINAL CONNECTION // PORT 8080</span>
+            <span className="font-bold tracking-widest uppercase">SECURE TERMINAL CONNECTION // PORT 5000</span>
           </div>
           <div className="flex items-center space-x-1.5">
             <span className="w-2 h-2 rounded-full bg-police-cyan animate-ping" />
