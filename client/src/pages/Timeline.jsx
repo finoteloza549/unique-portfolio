@@ -1,50 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, AlertCircle, CheckCircle, Clock, ShieldAlert } from 'lucide-react';
+import { Calendar, ShieldAlert } from 'lucide-react';
+import { useDossier } from '../context/DossierContext';
 
 const Timeline = () => {
-  const incidents = [
-    {
-      year: '2026 - PRESENT',
-      incidentCode: 'CR-2026-404',
-      title: 'Wanted FRONTEND Developer',
-      location: '',
-      description: 'Currently under investigation for learning React, Node.js, Express, databases, and full-stack application development. Suspected of building increasingly websites.',
-      status: 'ACTIVE INVESTIGATION',
-      iconColor: 'bg-emerald-500 shadow-[0_0_10px_#10b981]',
-      statusColor: 'text-emerald-400 bg-emerald-950/20 border-emerald-500/30'
-    },
-    {
-      year: '2026',
-      incidentCode: 'CR-2026-302',
-      title: 'Weather Intelligence Operation',
-      location: '',
-      description: 'Successfully constructed a weather intelligence system capable of tracking real-time meteorological conditions through external API surveillance networks',
-      status: 'CASE CLOSED',
-      iconColor: 'bg-police-cyan shadow-[0_0_10px_#00f0ff]',
-      statusColor: 'text-police-cyan bg-police-cyan/10 border-police-cyan/30'
-    },
-    {
-      year: '2026',
-      incidentCode: 'CR-2026-201',
-      title: 'Task Management Conspiracy',
-      location: '',
-      description: 'Developed a productivity monitoring platform allowing subjects to create, update, track, and eliminate assignments. Evidence stored locally for future review.',
-      status: 'CASE CLOSED',
-      iconColor: 'bg-police-cyan shadow-[0_0_10px_#00f0ff]',
-      statusColor: 'text-police-cyan bg-police-cyan/10 border-police-cyan/30'
-    },
-    {
-      year: '2024',
-      incidentCode: 'CR-2023-001',
-      title: 'First Programming Offense',
-      location: '',
-      description: 'Initial exposure to programming concepts including variables, loops, conditions, functions, and problem solving. This incident marked the beginning of the criminal coding career.',
-      status: 'FILE ARCHIVED',
-      iconColor: 'bg-police-amber shadow-[0_0_10px_#ffb300]',
-      statusColor: 'text-police-amber bg-police-amber/10 border-police-amber/30'
-    }
-  ];
+  const { dossier } = useDossier();
+  const { incidents } = dossier;
+
 
   return (
     <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 p-1 items-start max-w-6xl mx-auto w-full">
@@ -126,7 +88,7 @@ const Timeline = () => {
                   <p className="text-[10px] text-police-amber font-semibold font-mono tracking-wider mt-0.5">
                     AT: {incident.location}
                   </p>
-                  <p className="text-xs text-slate-400 font-mono mt-2 leading-relaxed">
+                  <p className="dossier-paragraph text-xs mt-2">
                     {incident.description}
                   </p>
                 </div>

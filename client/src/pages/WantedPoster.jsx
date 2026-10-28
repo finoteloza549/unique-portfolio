@@ -1,8 +1,28 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Shield, Target, FileText, User, Zap, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Shield, Target, User, Zap, AlertTriangle } from 'lucide-react';
+import { useDossier } from '../context/DossierContext';
 
 const WantedPoster = () => {
+  const { dossier } = useDossier();
+  const { vitals, bio, techStackCategories } = dossier;
+  const [showFullBio, setShowFullBio] = useState(false);
+
+  // Dynamic threat level color mapping
+  const getThreatLevelColor = (level) => {
+    switch (level?.toUpperCase()) {
+      case 'HIGH':
+      case 'MAXIMUM':
+        return 'text-red-500 font-bold animate-pulse uppercase';
+      case 'MEDIUM':
+        return 'text-police-amber font-bold animate-pulse uppercase';
+      case 'LOW':
+        return 'text-emerald-500 font-bold animate-pulse uppercase';
+      default:
+        return 'text-white font-bold uppercase';
+    }
+  };
+
   return (
     <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 p-1 items-start max-w-6xl mx-auto w-full">
       
@@ -29,7 +49,6 @@ const WantedPoster = () => {
             src="/suspect.jpg" 
             alt="Subject Photo" 
             className="w-full h-full object-cover filter grayscale sepia contrast-125 brightness-90 group-hover:scale-105 transition-transform duration-500"
-            
           />
           {/* Fingerprint indicator or Reticle overlay */}
           <div className="absolute bottom-1 right-1 bg-black/80 border border-police-amber/40 px-1 py-0.5 rounded text-[8px] text-police-amber font-mono">
@@ -51,23 +70,23 @@ const WantedPoster = () => {
         <div className="w-full mt-4 space-y-2 text-xs font-mono text-slate-300 bg-black/40 border border-police-cardBorder rounded p-3 leading-relaxed">
           <div className="flex justify-between border-b border-police-cardBorder/40 pb-1">
             <span className="text-police-amber uppercase">SUSPECT ID:</span>
-            <span className="font-semibold text-white">#FINOTELOZA-2026</span>
+            <span className="font-semibold text-white">{vitals.suspectId}</span>
           </div>
           <div className="flex justify-between border-b border-police-cardBorder/40 pb-1">
             <span className="text-police-amber uppercase">ALIASES:</span>
-            <span className="font-semibold text-white">FRONTEND-DEV</span>
+            <span className="font-semibold text-white">{vitals.aliases}</span>
           </div>
           <div className="flex justify-between border-b border-police-cardBorder/40 pb-1">
             <span className="text-police-amber uppercase">KNOWN WEAPONS:</span>
-            <span className="font-semibold text-white">React, Node, Express, MySQL,Tailwind CSS </span>
+            <span className="font-semibold text-white">React, Node, Express, MySQL, Tailwind CSS</span>
           </div>
           <div className="flex justify-between border-b border-police-cardBorder/40 pb-1">
             <span className="text-police-amber uppercase">LAST KNOWN LOC:</span>
-            <span className="font-semibold text-white">BAHIR DAR,ETHIOPIA</span>
+            <span className="font-semibold text-white">{vitals.location}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-police-amber uppercase">THREAT LEVEL:</span>
-            <span className="font-bold text-red-500 animate-pulse uppercase">HIGH</span>
+            <span className={getThreatLevelColor(vitals.threatLevel)}>{vitals.threatLevel}</span>
           </div>
         </div>
 
@@ -77,8 +96,8 @@ const WantedPoster = () => {
             <User size={16} className="text-slate-600" />
           </div>
           <div>
-            <p className="font-semibold text-slate-400">BIOMETRIC MATCH: 99.8%</p>
-            <p className="text-[9px]">DEPT INDEX: 5542-X-CYBER</p>
+            <p className="font-semibold text-slate-400">BIOMETRIC MATCH: {vitals.biometricMatch}</p>
+            <p className="text-[9px]">DEPT INDEX: {vitals.deptIndex}</p>
           </div>
         </div>
       </motion.div>
@@ -90,47 +109,55 @@ const WantedPoster = () => {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="lg:col-span-7 space-y-6"
       >
-        {/* Offense Profile (Bio) */}
-        <div className="bg-police-card border border-police-cardBorder rounded-lg p-5 shadow-lg glow-cyan">
+        {/* Offense Profile (Bio) - Uses crisp-card to isolate text readability */}
+        <div className="crisp-card border border-police-cardBorder rounded-lg p-5 shadow-lg glow-cyan">
           <div className="flex items-center space-x-2 border-b border-[#1e2430] pb-3 mb-4">
             <Shield className="text-police-cyan" size={18} />
-            <h2 className="text-md font-bold tracking-widest text-police-cyan font-mono uppercase">OFFENSE PROFILE // INVESTIGATION NOTES</h2>
+            <h2 className="text-md font-bold tracking-widest text-police-cyan font-mono uppercase">{bio.title}</h2>
           </div>
           
-          <div className="space-y-4 text-xs md:text-sm text-slate-300 font-mono leading-relaxed">
-              <p>
-              <span className="text-cyan-400">
-                INVESTIGATION SUMMARY</span>
-             </p>
-
-            <p>
-               The suspect, known Finoteloza, first entered the programming world in 2024.
-               Initial reports indicate repeated experimentation with C++, often resulting in unexpected errors, endless debugging sessions, and 
-               excessive use of online documentation.
-           </p>
-
-             <p>
-               As the investigation progressed, the suspect developed a strong interest in web development and 
-               was later found operating with React, Node.js, Express, and MySQL.
+          <div className="space-y-4 text-xs md:text-sm">
+            <p className="font-mono text-police-cyan font-bold tracking-widest uppercase">
+              {bio.summary}
             </p>
 
-            <p>
-              Authorities confirmed involvement in multiple personal and academic projects,
-               including full-stack web applications, responsive user interfaces, and database-driven systems.
-            </p>
+            {/* Render first paragraph immediately (short & simple) */}
+            {bio.paragraphs && bio.paragraphs.length > 0 && (
+              <p className="dossier-paragraph">
+                {bio.paragraphs[0]}
+              </p>
+            )}
 
-            <p>
-              Recent surveillance shows the suspect actively studying software architecture,
-              operating systems, databases, networking, and modern web technologies while continuously expanding technical capabilities.
-            </p>
+            {/* Expandable detailed paragraphs */}
+            <AnimatePresence>
+              {showFullBio && bio.paragraphs && bio.paragraphs.length > 1 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-4 overflow-hidden"
+                >
+                  {bio.paragraphs.slice(1).map((paragraph, index) => (
+                    <p key={index} className="dossier-paragraph">
+                      {paragraph}
+                    </p>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            <p>
-              Current threat assessment suggests a high probability of future involvement in
-             large-scale software development projects.
-            </p>
+            {/* Decrypt Details Toggle Button */}
+            {bio.paragraphs && bio.paragraphs.length > 1 && (
+              <button
+                onClick={() => setShowFullBio(!showFullBio)}
+                className="px-3 py-1.5 bg-black/40 hover:bg-police-cyan hover:text-black border border-police-cyan/40 hover:border-police-cyan text-police-cyan transition-all font-mono font-bold text-[9px] tracking-widest uppercase rounded cursor-pointer flex items-center space-x-1.5"
+              >
+                <span>{showFullBio ? '[COLLAPSE EVIDENCE RECORDS]' : '[DECRYPT FULL DOSSIER NOTES]'}</span>
+              </button>
+            )}
 
-            <p>
-              <span className="text-cyan-400">Status: Active, learning, and highly motivated</span>
+            <p className="font-mono text-police-cyan font-bold tracking-wider animate-pulse pt-2">
+              {bio.statusNote}
             </p>
           </div>
         </div>
@@ -149,25 +176,21 @@ const WantedPoster = () => {
                 <Zap size={12} className="animate-pulse" />
               </div>
               <ul className="space-y-1 text-slate-400">
-                <li>• React.js / Vite / React Router</li>
-                <li>• Tailwind CSS (Tactical Styling)</li>
-                <li>• Framer Motion (Transitions)</li>
-                <li>• Socket.IO Client (Surveillance)</li>
-                <li>• Recharts / Chart.js (Telemetry)</li>
+                {techStackCategories.client.map((item, idx) => (
+                  <li key={idx}>• {item}</li>
+                ))}
               </ul>
             </div>
 
             <div className="bg-black/40 border border-police-cardBorder p-3 rounded">
               <div className="text-police-amber font-bold mb-2 uppercase flex items-center justify-between">
-                <span>server-side Operations</span>
+                <span>Server-side Operations</span>
                 <Zap size={12} className="animate-pulse" />
               </div>
               <ul className="space-y-1 text-slate-400">
-                <li>• Node.js / Express Server</li>
-                <li>• Socket.IO (Socket Servers)</li>
-                <li>• Prisma ORM / Sequelize</li>
-                <li>• MySQL Databases</li>
-                <li>• JWT Auth & bcrypt Encryption</li>
+                {techStackCategories.server.map((item, idx) => (
+                  <li key={idx}>• {item}</li>
+                ))}
               </ul>
             </div>
           </div>

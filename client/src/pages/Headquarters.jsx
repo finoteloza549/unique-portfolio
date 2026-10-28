@@ -1,18 +1,223 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSocket } from '../context/SocketContext';
+import { useDossier } from '../context/DossierContext';
 import { Shield, Eye, Lock, RefreshCw, Trash, UserCheck, AlertTriangle, Activity, Users, FileText, CheckCircle2, Clock } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'police-database-production.up.railway.app';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 const Headquarters = () => {
   const { socket, isConnected } = useSocket();
+  const { dossier, updateDossier } = useDossier();
   const [token, setToken] = useState(localStorage.getItem('admin_token') || '');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [isLoadingAuth, setIsLoadingAuth] = useState(false);
+
+  // Dossier Editor State
+  const [showEditor, setShowEditor] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState({ success: null, message: '' });
+  const [editorTab, setEditorTab] = useState('vitals');
+
+  const [editVitals, setEditVitals] = useState({
+    aliases: '',
+    location: '',
+    threatLevel: 'HIGH',
+    biometricMatch: '',
+    deptIndex: ''
+  });
+
+  const [editBio, setEditBio] = useState({
+    summary: '',
+    statusNote: '',
+    paragraphsText: ''
+  });
+
+  const [editSkills, setEditSkills] = useState([]);
+  const [editTech, setEditTech] = useState({ clientText: '', serverText: '' });
+  const [editCases, setEditCases] = useState([]);
+  const [editIncidents, setEditIncidents] = useState([]);
+
+  useEffect(() => {
+    if (dossier) {
+      if (dossier.vitals) {
+        setEditVitals({
+          aliases: dossier.vitals.aliases || '',
+          location: dossier.vitals.location || '',
+          threatLevel: dossier.vitals.threatLevel || 'HIGH',
+          biometricMatch: dossier.vitals.biometricMatch || '',
+          deptIndex: dossier.vitals.deptIndex || ''
+        });
+      }
+      if (dossier.bio) {
+        setEditBio({
+          summary: dossier.bio.summary || '',
+          statusNote: dossier.bio.statusNote || '',
+          paragraphsText: dossier.bio.paragraphs ? dossier.bio.paragraphs.join('\n\n') : ''
+        });
+      }
+      if (dossier.skills) {
+        setEditSkills(dossier.skills.map(s => ({ ...s })));
+      }
+      if (dossier.techStackCategories) {
+        setEditTech({
+          clientText: dossier.techStackCategories.client ? dossier.techStackCategories.client.join(', ') : '',
+          serverText: dossier.techStackCategories.server ? dossier.techStackCategories.server.join(', ') : ''
+        });
+      }
+      if (dossier.cases) {
+        setEditCases(dossier.cases.map(c => ({
+          ...c,
+          techText: c.tech ? c.tech.join(', ') : ''
+        })));
+      }
+      if (dossier.incidents) {
+        setEditIncidents(dossier.incidents.map(inc => ({ ...inc })));
+      }
+    }
+  }, [dossier]);
+
+  // Skill Modifiers
+  const handleAddSkill = () => {
+    setEditSkills([...editSkills, {
+      name: 'New Skill',
+      category: 'Weaponry',
+      level: '80%',
+      bagId: `EVID-SK-${Math.floor(100 + Math.random() * 900)}`,
+      caseRef: 'General Audit',
+      recovered: '01-01-2026',
+      notes: 'Investigated capability.'
+    }]);
+  };
+  const handleRemoveSkill = (index) => {
+    setEditSkills(editSkills.filter((_, idx) => idx !== index));
+  };
+  const handleSkillChange = (index, field, value) => {
+    const updated = [...editSkills];
+    updated[index][field] = value;
+    setEditSkills(updated);
+  };
+
+  // Case Modifiers
+  const handleAddCase = () => {
+    setEditCases([...editCases, {
+      id: `case-00${editCases.length + 1}`,
+      number: `CASE #00${editCases.length + 1}`,
+      title: 'New Case File',
+      subtitle: 'Technical Operation',
+      description: 'Overview of evidence files.',
+      fullDescription: 'Complete narrative of case files and code audits.',
+      techText: 'HTML, CSS, JavaScript',
+      status: 'ACTIVE',
+      statusColor: 'text-police-cyan border-police-cyan/40 bg-cyan-950/20',
+      role: 'Developer',
+      github: 'https://github.com/finoteloza549',
+      demo: 'https://github.com/finoteloza549'
+    }]);
+  };
+  const handleRemoveCase = (index) => {
+    setEditCases(editCases.filter((_, idx) => idx !== index));
+  };
+  const handleCaseChange = (index, field, value) => {
+    const updated = [...editCases];
+    updated[index][field] = value;
+    setEditCases(updated);
+  };
+
+  // Incident Modifiers
+  const handleAddIncident = () => {
+    setEditIncidents([...editIncidents, {
+      year: '2026',
+      incidentCode: `CR-2026-${Math.floor(100 + Math.random() * 900)}`,
+      title: 'New Coding Incitement',
+      location: 'GLOBAL GRID',
+      description: 'Subject suspected of creating responsive user layouts.',
+      status: 'ACTIVE INVESTIGATION',
+      iconColor: 'bg-police-cyan shadow-[0_0_10px_#00f0ff]',
+      statusColor: 'text-police-cyan bg-police-cyan/10 border-police-cyan/30'
+    }]);
+  };
+  const handleRemoveIncident = (index) => {
+    setEditIncidents(editIncidents.filter((_, idx) => idx !== index));
+  };
+  const handleIncidentChange = (index, field, value) => {
+    const updated = [...editIncidents];
+    updated[index][field] = value;
+    setEditIncidents(updated);
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setSaveStatus({ success: null, message: '' });
+
+    const updatedData = {
+      vitals: {
+        suspectName: dossier.vitals?.suspectName || 'Finoteloza',
+        suspectId: dossier.vitals?.suspectId || '#FINOTELOZA-2026',
+        aliases: editVitals.aliases,
+        location: editVitals.location,
+        threatLevel: editVitals.threatLevel,
+        biometricMatch: editVitals.biometricMatch,
+        deptIndex: editVitals.deptIndex
+      },
+      bio: {
+        title: dossier.bio?.title || 'OFFENSE PROFILE // INVESTIGATION NOTES',
+        summary: editBio.summary,
+        statusNote: editBio.statusNote,
+        paragraphs: editBio.paragraphsText.split('\n\n').map(p => p.trim()).filter(Boolean)
+      },
+      skills: editSkills.map(s => ({
+        name: s.name,
+        category: s.category,
+        level: s.level,
+        bagId: s.bagId,
+        caseRef: s.caseRef,
+        recovered: s.recovered,
+        notes: s.notes
+      })),
+      techStackCategories: {
+        client: editTech.clientText.split(',').map(t => t.trim()).filter(Boolean),
+        server: editTech.serverText.split(',').map(t => t.trim()).filter(Boolean)
+      },
+      cases: editCases.map(c => ({
+        id: c.id,
+        number: c.number,
+        title: c.title,
+        subtitle: c.subtitle,
+        description: c.description,
+        fullDescription: c.fullDescription,
+        tech: c.techText.split(',').map(t => t.trim()).filter(Boolean),
+        status: c.status,
+        statusColor: c.statusColor,
+        role: c.role,
+        github: c.github,
+        demo: c.demo
+      })),
+      incidents: editIncidents.map(inc => ({
+        year: inc.year,
+        incidentCode: inc.incidentCode,
+        title: inc.title,
+        location: inc.location,
+        description: inc.description,
+        status: inc.status,
+        iconColor: inc.iconColor,
+        statusColor: inc.statusColor
+      }))
+    };
+
+    const res = await updateDossier(updatedData, token);
+    setIsSaving(false);
+    if (res.success) {
+      setSaveStatus({ success: true, message: 'Dossier records successfully written to database.' });
+      setTimeout(() => setSaveStatus({ success: null, message: '' }), 5000);
+    } else {
+      setSaveStatus({ success: false, message: res.error || 'Failed to rewrite dossier files.' });
+    }
+  };
 
   // Dashboard Telemetry Data
   const [summary, setSummary] = useState({
@@ -254,6 +459,14 @@ const Headquarters = () => {
 
         <div className="flex items-center space-x-2">
           <button 
+            onClick={() => setShowEditor(!showEditor)}
+            className={`px-2.5 py-1.5 rounded flex items-center space-x-1.5 transition-all text-[10px] uppercase font-bold cursor-pointer border ${showEditor ? 'bg-police-cyan text-black border-police-cyan shadow-[0_0_8px_#00f0ff]' : 'bg-police-card border-police-cardBorder text-slate-300 hover:border-police-cyan hover:text-police-cyan'}`}
+          >
+            <FileText size={11} />
+            <span>{showEditor ? 'HIDE DOSSIER EDITOR' : 'EDIT SUSPECT DOSSIER'}</span>
+          </button>
+
+          <button 
             onClick={fetchDashboardData}
             className="bg-police-card border border-police-cardBorder hover:border-police-cyan hover:text-police-cyan px-2.5 py-1.5 rounded flex items-center space-x-1.5 transition-all text-[10px] uppercase font-bold cursor-pointer"
           >
@@ -296,6 +509,515 @@ const Headquarters = () => {
           <span className="text-[8px] text-slate-500 uppercase mt-1 block">Average engagement time</span>
         </div>
       </div>
+
+      {/* Dossier Editor Form */}
+      <AnimatePresence>
+        {showEditor && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-police-card border border-police-cyan rounded-lg p-5 mb-6 text-xs text-slate-300 shadow-[0_0_15px_rgba(0,240,255,0.15)] relative overflow-hidden"
+          >
+            <div className="flex items-center space-x-2 border-b border-police-cyan/40 pb-2.5 mb-4">
+              <Shield className="text-police-cyan animate-pulse" size={16} />
+              <span className="font-bold tracking-widest text-police-cyan uppercase font-mono">DOSSIER DATABASE WRITER PORT</span>
+            </div>
+
+            {saveStatus.message && (
+              <div className={`p-2.5 rounded text-[10px] flex items-center space-x-2 mb-4 font-bold border ${saveStatus.success ? 'bg-emerald-950/20 border-emerald-900/40 text-emerald-400' : 'bg-red-950/20 border-red-900/40 text-red-400'}`}>
+                <AlertTriangle size={14} className="flex-shrink-0 animate-bounce" />
+                <span>{saveStatus.message}</span>
+              </div>
+            )}
+
+            <div className="flex border-b border-[#1e2430] mb-4 space-x-1">
+              {[
+                { id: 'vitals', label: 'Vitals & Bio' },
+                { id: 'skills', label: 'Skills' },
+                { id: 'tech', label: 'Tech Stack' },
+                { id: 'cases', label: 'Case Files' },
+                { id: 'incidents', label: 'Incidents' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setEditorTab(tab.id)}
+                  className={`px-3 py-1.5 uppercase font-mono text-[10px] font-black border-t border-x rounded-t transition-all cursor-pointer ${
+                    editorTab === tab.id
+                      ? 'bg-black/60 border-police-cyan text-police-cyan'
+                      : 'border-transparent text-slate-500 hover:text-slate-200'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <form onSubmit={handleSave} className="space-y-4">
+              
+              {/* TAB 1: VITALS & BIO */}
+              {editorTab === 'vitals' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <label className="block text-[9px] uppercase tracking-wider text-slate-400 font-bold">Suspect Aliases</label>
+                      <input
+                        type="text"
+                        value={editVitals.aliases}
+                        onChange={(e) => setEditVitals({ ...editVitals, aliases: e.target.value })}
+                        className="w-full bg-black/60 border border-police-cardBorder rounded py-1.5 px-3 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="block text-[9px] uppercase tracking-wider text-slate-400 font-bold">Last Known Location</label>
+                      <input
+                        type="text"
+                        value={editVitals.location}
+                        onChange={(e) => setEditVitals({ ...editVitals, location: e.target.value })}
+                        className="w-full bg-black/60 border border-police-cardBorder rounded py-1.5 px-3 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="block text-[9px] uppercase tracking-wider text-slate-400 font-bold">Threat Level</label>
+                      <select
+                        value={editVitals.threatLevel}
+                        onChange={(e) => setEditVitals({ ...editVitals, threatLevel: e.target.value })}
+                        className="w-full bg-black/60 border border-police-cardBorder rounded py-1.5 px-3 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono"
+                      >
+                        <option value="LOW">LOW</option>
+                        <option value="MEDIUM">MEDIUM</option>
+                        <option value="HIGH">HIGH</option>
+                        <option value="MAXIMUM">MAXIMUM</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="block text-[9px] uppercase tracking-wider text-slate-400 font-bold">Biometric Match Percentage</label>
+                      <input
+                        type="text"
+                        value={editVitals.biometricMatch}
+                        onChange={(e) => setEditVitals({ ...editVitals, biometricMatch: e.target.value })}
+                        className="w-full bg-black/60 border border-police-cardBorder rounded py-1.5 px-3 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="block text-[9px] uppercase tracking-wider text-slate-400 font-bold">Department Index Code</label>
+                      <input
+                        type="text"
+                        value={editVitals.deptIndex}
+                        onChange={(e) => setEditVitals({ ...editVitals, deptIndex: e.target.value })}
+                        className="w-full bg-black/60 border border-police-cardBorder rounded py-1.5 px-3 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 border-t border-[#1e2430]/60 pt-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="block text-[9px] uppercase tracking-wider text-slate-400 font-bold">Bio Narrative Summary</label>
+                        <input
+                          type="text"
+                          value={editBio.summary}
+                          onChange={(e) => setEditBio({ ...editBio, summary: e.target.value })}
+                          className="w-full bg-black/60 border border-police-cardBorder rounded py-1.5 px-3 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="block text-[9px] uppercase tracking-wider text-slate-400 font-bold">Bio Status Note</label>
+                        <input
+                          type="text"
+                          value={editBio.statusNote}
+                          onChange={(e) => setEditBio({ ...editBio, statusNote: e.target.value })}
+                          className="w-full bg-black/60 border border-police-cardBorder rounded py-1.5 px-3 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="block text-[9px] uppercase tracking-wider text-slate-400 font-bold">Bio Narrative Paragraphs (Separate with double newlines)</label>
+                      <textarea
+                        rows={6}
+                        value={editBio.paragraphsText}
+                        onChange={(e) => setEditBio({ ...editBio, paragraphsText: e.target.value })}
+                        className="w-full bg-black/60 border border-police-cardBorder rounded py-2 px-3 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono leading-relaxed"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: SKILLS */}
+              {editorTab === 'skills' && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-[#1e2430] pb-2 mb-2">
+                    <span className="text-[10px] font-bold text-slate-400">REGISTERED SKILLS ({editSkills.length})</span>
+                    <button
+                      type="button"
+                      onClick={handleAddSkill}
+                      className="px-2 py-1 bg-police-cyan/15 border border-police-cyan hover:bg-police-cyan hover:text-black font-bold rounded text-[8px] tracking-wider transition-all cursor-pointer uppercase font-mono"
+                    >
+                      + Add Skill Asset
+                    </button>
+                  </div>
+                  <div className="space-y-4 max-h-[360px] overflow-y-auto pr-1">
+                    {editSkills.map((skill, index) => (
+                      <div key={index} className="bg-black/40 border border-slate-900 rounded p-3 relative space-y-3">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSkill(index)}
+                          className="absolute top-2 right-2 text-red-500 hover:text-white"
+                        >
+                          <Trash size={12} />
+                        </button>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Skill Name</label>
+                            <input
+                              type="text"
+                              value={skill.name}
+                              onChange={(e) => handleSkillChange(index, 'name', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Category</label>
+                            <input
+                              type="text"
+                              value={skill.category}
+                              onChange={(e) => handleSkillChange(index, 'category', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Level %</label>
+                            <input
+                              type="text"
+                              value={skill.level}
+                              onChange={(e) => handleSkillChange(index, 'level', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Evidence Bag ID</label>
+                            <input
+                              type="text"
+                              value={skill.bagId}
+                              onChange={(e) => handleSkillChange(index, 'bagId', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Case Reference</label>
+                            <input
+                              type="text"
+                              value={skill.caseRef}
+                              onChange={(e) => handleSkillChange(index, 'caseRef', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Recovered Date</label>
+                            <input
+                              type="text"
+                              value={skill.recovered}
+                              onChange={(e) => handleSkillChange(index, 'recovered', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Investigator Notes</label>
+                          <input
+                            type="text"
+                            value={skill.notes}
+                            onChange={(e) => handleSkillChange(index, 'notes', e.target.value)}
+                            className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: TECH STACK */}
+              {editorTab === 'tech' && (
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="block text-[9px] uppercase tracking-wider text-slate-400 font-bold">Client Weaponry Categories (Comma-separated)</label>
+                    <textarea
+                      rows={3}
+                      value={editTech.clientText}
+                      onChange={(e) => setEditTech({ ...editTech, clientText: e.target.value })}
+                      className="w-full bg-black/60 border border-police-cardBorder rounded py-2 px-3 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono leading-relaxed"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[9px] uppercase tracking-wider text-slate-400 font-bold">Server Weaponry Categories (Comma-separated)</label>
+                    <textarea
+                      rows={3}
+                      value={editTech.serverText}
+                      onChange={(e) => setEditTech({ ...editTech, serverText: e.target.value })}
+                      className="w-full bg-black/60 border border-police-cardBorder rounded py-2 px-3 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono leading-relaxed"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 4: CASE DOSSIERS */}
+              {editorTab === 'cases' && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-[#1e2430] pb-2 mb-2">
+                    <span className="text-[10px] font-bold text-slate-400">CASE FILE DOSSIERS ({editCases.length})</span>
+                    <button
+                      type="button"
+                      onClick={handleAddCase}
+                      className="px-2 py-1 bg-police-cyan/15 border border-police-cyan hover:bg-police-cyan hover:text-black font-bold rounded text-[8px] tracking-wider transition-all cursor-pointer uppercase font-mono"
+                    >
+                      + Add Case Dossier
+                    </button>
+                  </div>
+                  <div className="space-y-4 max-h-[360px] overflow-y-auto pr-1">
+                    {editCases.map((c, index) => (
+                      <div key={index} className="bg-black/40 border border-slate-900 rounded p-3 relative space-y-3">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCase(index)}
+                          className="absolute top-2 right-2 text-red-500 hover:text-white"
+                        >
+                          <Trash size={12} />
+                        </button>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Case ID</label>
+                            <input
+                              type="text"
+                              value={c.id}
+                              onChange={(e) => handleCaseChange(index, 'id', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Case Number</label>
+                            <input
+                              type="text"
+                              value={c.number}
+                              onChange={(e) => handleCaseChange(index, 'number', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Title</label>
+                            <input
+                              type="text"
+                              value={c.title}
+                              onChange={(e) => handleCaseChange(index, 'title', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Subtitle</label>
+                            <input
+                              type="text"
+                              value={c.subtitle}
+                              onChange={(e) => handleCaseChange(index, 'subtitle', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Role</label>
+                            <input
+                              type="text"
+                              value={c.role}
+                              onChange={(e) => handleCaseChange(index, 'role', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Status Badge</label>
+                            <input
+                              type="text"
+                              value={c.status}
+                              onChange={(e) => handleCaseChange(index, 'status', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Status CSS Classes</label>
+                            <input
+                              type="text"
+                              value={c.statusColor}
+                              onChange={(e) => handleCaseChange(index, 'statusColor', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">GitHub Source Repository</label>
+                            <input
+                              type="text"
+                              value={c.github}
+                              onChange={(e) => handleCaseChange(index, 'github', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Live Demo Url</label>
+                            <input
+                              type="text"
+                              value={c.demo}
+                              onChange={(e) => handleCaseChange(index, 'demo', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Short Description</label>
+                          <input
+                            type="text"
+                            value={c.description}
+                            onChange={(e) => handleCaseChange(index, 'description', e.target.value)}
+                            className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Tech Weaponry (Comma-separated)</label>
+                          <input
+                            type="text"
+                            value={c.techText || ''}
+                            onChange={(e) => handleCaseChange(index, 'techText', e.target.value)}
+                            className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Full Case Investigation Record</label>
+                          <textarea
+                            rows={3}
+                            value={c.fullDescription}
+                            onChange={(e) => handleCaseChange(index, 'fullDescription', e.target.value)}
+                            className="w-full bg-black/60 border border-police-cardBorder rounded py-1.5 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px] leading-relaxed"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 5: INCIDENTS */}
+              {editorTab === 'incidents' && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-[#1e2430] pb-2 mb-2">
+                    <span className="text-[10px] font-bold text-slate-400">CRIMINAL TIMELINE INCIDENTS ({editIncidents.length})</span>
+                    <button
+                      type="button"
+                      onClick={handleAddIncident}
+                      className="px-2 py-1 bg-police-cyan/15 border border-police-cyan hover:bg-police-cyan hover:text-black font-bold rounded text-[8px] tracking-wider transition-all cursor-pointer uppercase font-mono"
+                    >
+                      + Add Incident Log
+                    </button>
+                  </div>
+                  <div className="space-y-4 max-h-[360px] overflow-y-auto pr-1">
+                    {editIncidents.map((inc, index) => (
+                      <div key={index} className="bg-black/40 border border-slate-900 rounded p-3 relative space-y-3">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveIncident(index)}
+                          className="absolute top-2 right-2 text-red-500 hover:text-white"
+                        >
+                          <Trash size={12} />
+                        </button>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Incident Year</label>
+                            <input
+                              type="text"
+                              value={inc.year}
+                              onChange={(e) => handleIncidentChange(index, 'year', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Incident Code</label>
+                            <input
+                              type="text"
+                              value={inc.incidentCode}
+                              onChange={(e) => handleIncidentChange(index, 'incidentCode', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Incident Title</label>
+                            <input
+                              type="text"
+                              value={inc.title}
+                              onChange={(e) => handleIncidentChange(index, 'title', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Grid Location</label>
+                            <input
+                              type="text"
+                              value={inc.location}
+                              onChange={(e) => handleIncidentChange(index, 'location', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Patrol Status</label>
+                            <input
+                              type="text"
+                              value={inc.status}
+                              onChange={(e) => handleIncidentChange(index, 'status', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Icon Glow CSS</label>
+                            <input
+                              type="text"
+                              value={inc.iconColor}
+                              onChange={(e) => handleIncidentChange(index, 'iconColor', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Status Badge CSS</label>
+                            <input
+                              type="text"
+                              value={inc.statusColor}
+                              onChange={(e) => handleIncidentChange(index, 'statusColor', e.target.value)}
+                              className="w-full bg-black/60 border border-police-cardBorder rounded py-1 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-[8px] uppercase text-slate-500 font-bold mb-1">Narrative Description</label>
+                          <input
+                            type="text"
+                            value={inc.description}
+                            onChange={(e) => handleIncidentChange(index, 'description', e.target.value)}
+                            className="w-full bg-black/60 border border-police-cardBorder rounded py-1.5 px-2 text-slate-200 focus:outline-none focus:border-police-cyan transition-all font-mono text-[10px]"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="w-full mt-4 py-2.5 bg-police-cyan hover:bg-white text-black font-bold tracking-widest text-[10px] rounded transition-all cursor-pointer uppercase shadow-[0_0_10px_rgba(0,240,255,0.2)] disabled:opacity-40"
+              >
+                {isSaving ? 'OVERWRITING FILES IN CORE GRID...' : 'SAVE DOSSIER RECORDS'}
+              </button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Grid Layout for Analytics/Surveillance Feed */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

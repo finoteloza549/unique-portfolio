@@ -7,7 +7,7 @@ const SocketContext = createContext(null);
 export const useSocket = () => useContext(SocketContext);
 
 // Dynamic backend URL resolver (useful for local development vs production deployment)
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'police-database-production.up.railway.app';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);

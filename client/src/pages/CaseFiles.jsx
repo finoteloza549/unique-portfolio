@@ -1,59 +1,13 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, FolderOpen, Folder, ExternalLink, Github, Tag, Eye, Lock } from 'lucide-react';
+import { Shield, FolderOpen, Folder, ExternalLink, Github, Tag } from 'lucide-react';
+import { useDossier } from '../context/DossierContext';
 
 const CaseFiles = () => {
   const [selectedCase, setSelectedCase] = useState(null);
+  const { dossier } = useDossier();
+  const { cases } = dossier;
 
-  const cases = [
-  {
-    id: 'case-001',
-    number: 'CASE #001',
-    title: 'Weather Intelligence System',
-    subtitle: 'Real-Time Weather Monitoring',
-    description: 'Weather application that provides current conditions and forecasts using external APIs.',
-    fullDescription:
-      'A responsive weather application built with React that fetches real-time weather data from a public API. Users can search for cities worldwide, view current temperature, humidity, wind speed, and weather forecasts. Features clean UI, API integration, and responsive design.',
-    tech: ['HTML', 'JavaScript', 'Weather API', 'CSS'],
-    status: 'DEPLOYED',
-    statusColor: 'text-emerald-400 border-emerald-500/40 bg-emerald-950/20',
-    role: 'Frontend Developer',
-    github: 'https://github.com/finoteloza549/Weather-app',
-    demo: 'https://weather-app-pied-iota-68.vercel.app/'
-  },
-
-  {
-    id: 'case-002',
-    number: 'CASE #002',
-    title: 'Task Management System',
-    subtitle: 'Personal Productivity Tracker',
-    description: 'A to-do application for organizing and tracking daily tasks.',
-    fullDescription:
-      'A task management application that allows users to create, edit, complete, and delete tasks. Features local storage persistence, filtering, and responsive design to improve daily productivity.',
-    tech: ['HTML', 'JavaScript', 'Local Storage', 'CSS'],
-    status: 'DEPLOYED',
-    statusColor: 'text-emerald-400 border-emerald-500/40 bg-emerald-950/20',
-    role: 'Frontend Developer',
-    github: 'https://github.com/finoteloza549',
-    demo: 'https://to-do-list-app-dun-nine.vercel.app/'
-  },
-
-  {
-    id: 'case-003',
-    number: 'CASE #003',
-    title: 'Personal Portfolio',
-    subtitle: 'Developer Showcase Platform',
-    description: 'Professional portfolio website showcasing projects and skills.',
-    fullDescription:
-      'A modern portfolio website designed to showcase projects, technical skills, education, and contact information. Built with React and Tailwind CSS featuring responsive design, animations, and project galleries.',
-    tech: ['React', 'Tailwind CSS', 'JavaScript', 'Framer Motion'],
-    status: 'ACTIVE',
-    statusColor: 'text-police-cyan border-police-cyan/40 bg-cyan-950/20',
-    role: 'Full-Stack Developer',
-    github: 'https://github.com/finoteloza549/unique-portfolio',
-    demo: 'https://unique-portfolio-n593.vercel.app/'
-  }
-];
   return (
     <div className="flex-1 flex flex-col p-1 max-w-6xl mx-auto w-full">
       <div className="flex items-center space-x-2 border-b border-[#1e2430] pb-3 mb-6">
@@ -95,12 +49,8 @@ const CaseFiles = () => {
                 {project.subtitle}
               </p>
               
-              <p className="text-xs text-slate-400 font-mono mt-3 leading-relaxed flex-1">
+              <p className="dossier-paragraph text-xs mt-3 flex-1">
                 {project.description}
-              </p>
-
-              <p className="text-xs text-slate-400 font-mono mt-3 leading-relaxed flex-1">
-                {project.fullDescription}
               </p>
             </div>
 
@@ -167,7 +117,7 @@ const CaseFiles = () => {
                   <h4 className="text-police-cyan font-bold uppercase tracking-wider mb-2 flex items-center">
                     <span className="border-b border-police-cyan/30 w-full pr-2">Case Narrative // Summary</span>
                   </h4>
-                  <p className="text-slate-300 leading-relaxed font-mono text-xs">
+                  <p className="dossier-paragraph text-xs md:text-sm">
                     {selectedCase.fullDescription}
                   </p>
                 </div>

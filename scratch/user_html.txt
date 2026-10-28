@@ -1,0 +1,89 @@
+<USER_REQUEST>
+i do not like the hand cuff u make on my portifolio add this one instead <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Model 4924160 — Restraint Hardware</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --charcoal: #17181a;
+    --charcoal-2: #202225;
+    --gunmetal: #3c3f44;
+    --steel: #b9bcc0;
+    --steel-light: #e7e8ea;
+    --hazard: #d9a52a;
+    --hazard-dim: #7a5f1c;
+    --line: #4a4d52;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+
+  html, body{
+    background: var(--charcoal);
+    color: var(--steel-light);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+  }
+
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 48px 20px;
+    background:
+      radial-gradient(ellipse at top left, rgba(255,255,255,0.03), transparent 55%),
+      var(--charcoal);
+  }
+
+  .tag{
+    position:relative;
+    width: min(760px, 100%);
+    background: var(--charcoal-2);
+    border: 1px solid var(--line);
+    padding: 28px;
+    box-shadow:
+      0 30px 60px -20px rgba(0,0,0,0.7),
+      inset 0 1px 0 rgba(255,255,255,0.03);
+  }
+
+  /* corner rivets */
+  .rivet{
+    position:absolute;
+    width: 11px; height: 11px;
+    border-radius:50%;
+    background: linear-gradient(145deg, #8b8e93, #4a4c50);
+    box-shadow:
+      0 1px 2px rgba(0,0,0,0.6),
+      inset 0 0 2px rgba(0,0,0,0.5),
+      inset 1px 1px 1px rgba(255,255,255,0.35);
+  }
+  .rivet.tl{ top: 14px; left: 14px; }
+  .rivet.tr{ top: 14px; right: 14px; }
+  .rivet.bl{ bottom: 14px; left: 14px; }
+  .rivet.br{ bottom: 14px; right: 14px; }
+
+  .top-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    padding: 4px 18px 22px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 20px;
+  }
+
+  .eyebrow{
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--hazard);
+    text-transform: uppercase;
+  }
+
+  h1{
+    fon
+<truncated 45216 bytes>
+ZJflAivhdIb5Py0Gna9Ie50n+hH3ex3/UMCU9kBlEuajTAnWKA3xNwZzsk3J1c2wTwi4bvEl8Vz50gb4HlDjD2LbO5O0l1dxz5UGxJXI7FUnKThByiPX53f60i3F+0o8+YNsenx2PUXZ7fmXUSVB3LAXozXGCXQm8c/vEJcN8TJ0/XozRayI5T8kIrHIIHHuGDu+1g6c8GaqU3alqM3vLSz4iDtO8Ri8I1u3gTzyESvGwMlW/1yXMuey6H9aZUG0laocajjJn42KJCSrDpkjLmUaR+kkggPU/xa2gqjXSvR9NYbYuQ93rTOS+i1QHODOcK8yicqmtOy83zf9DP5hD13ivcnl6Be1OE0XwwV7c0TCLh6HrOcYyjz1PLwQw9p4/ua5Q1veMNy3333iX90eVQbYe4M88swNAFz6cKFC8vFixdFzy/PaXOKT+4i33ffvcsjjz7sf2Nj00yZfFrDI4f5tzjoRfs4d9e55fyFi46DsrB98MEHlyu6sL0oOfW9wR9P3OATodwdvq453eceX3Sf4B/wri9n1Gb8AcmnPvkJ43PPfGq5rvnOhtobY7rXc3L+wl825RIa1/EA1YVw2bVkgBI9RszjK8JILQuvoay4ekPMeNfG/3q+iOhHIaCyuXatqOz4BIsLSO58c4eY+RAfzA1s+GUIfCNTu0hIPyrcKtsHIonMwDwxMfjCaborTP+fPM2GN5tef6rnNVvrNDcs5Ii13baMNfKzpylf9GvGZQqs4l1msYFWCHod7PYbbU3aa4DqJcprsyG+jzvEzoAxnco7aQOTTkBAe2qeQEummjgdG2js4K0us07vYbY/znaVw6s8x1sA78FZg02xs51CL4+Ro6bGSna+lBmo6tq+eUMyCuMpB1xJpmaz56blGV2eHUahMtUBpG1jeQYSj02Qx+2YrObpfw8u87St3hpo1DuDKQsVGwMaxjLNzt604AD9jJRYRURmp4TSUofFsd4HaMGc5zjY2FT+1F9cYS+iUMtE+8Tpk5/51Z4kJ7sjoPq4DfV28kDdVkh72JZ2gBewIe62srLaMHa0N+aRO7EHF5XyOt6GqHJC1sF8y7CzHCxgUmMBdUnKowjCC0ZdIeKtq5iaZuy0kRUaJ1mYnGfHM972G7fIkdW4w7F1KeemP0XSXGOB0bjuend9zFffOm27FaklfimDhXJsgHtD7GcdtYhK5m+Is3BKx90p/1xa63yHuBZW+ZL3pCv+IHOEuyY6YRG74mLhz1/Q3vCdYTa33hRrI9w8zwlz8iXN4xL81iY8J9+Lly6ad37ZrnVbu3NuzxVpy/A0KnwDsY/2gbKSVdqPWyGX1Jti56UHCtS+9i825UTncoYMqgTjUFqvM9FmzGS5cZvlVwck47qbchj7lQcaf/ABp2GIDfcCRdysIfGHxhrPLfPRcsv8DvUzwaKMLTW3/bJ6cKLHxid4IXpfoGBPWjwyeHy4PFwW73q41ADy5hucxp72rOrahxkJ9N7mSazzhrihP40Fui2AcruBlFVt6rbuNJ2Uvu2ASqUkMdJvkUH9k4H0syg/Q8gf2nQ6tPrZlL4vXsiYyEaF8kuulzQuIL/gQZvnziI65iqb0Ie0EWZT+obXv355ozbDviuszTDlP/HEE8unPvWp5dlnn10+8eQnNZcuLS+88II2yfcp38N59pSfSjxzTulXLXffc5f98jwqjyrRjvfcfa9k57IWeLOfuvG75I6V9cAVEq9+yq+E0L/d7rkTTd2oA/P7kjbW5y++sFw8/6LL4S7xC889q43w5eW5Z59ablzluwOXlmtaI5555qnl0vln5fua1xpGJJttuVMr5HzfFwf8acyNEzpfnzwz+n30P0R5SA+dkXTZmWb8MP5zAUh5pLVx913i3A1mA
+<truncated 454593 bytes>
+
+NOTE: The output was truncated because it was too long. Use a more targeted query or a smaller range to get the information you need.
